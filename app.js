@@ -13,14 +13,12 @@ window.formatMoney = function(amount) {
   return `${currency} ${Number(amount).toFixed(2)}`;
 };
 
-
 function updateCommissionBadges(rate) {
   const cb = $('commission-rate-badge');
   const hb = $('header-rate-badge');
   if (cb) cb.textContent = rate;
   if (hb) hb.textContent = rate;
 }
-
 
 const screens = document.querySelectorAll('.screen');
 const navButtons = document.querySelectorAll('.nav-btn');
@@ -87,7 +85,6 @@ editAmount.addEventListener('input', () => {
   updateCommissionPreview(editAmount, editCommissionPreview);
 });
 
-
 const entryRate = $('entry-rate');
 if (entryRate) {
   entryRate.addEventListener('input', () => {
@@ -97,7 +94,6 @@ if (entryRate) {
     updateCommissionPreview(entryAmount, commissionPreview);
   });
 }
-
 
 const entryCurrency = $('entry-currency');
 if (entryCurrency) {
@@ -393,7 +389,6 @@ async function initApp() {
   const rInput = $('entry-rate');
   if (rInput) rInput.value = savedRate;
   updateCommissionBadges(savedRate);
-
 
   const savedCurrency = localStorage.getItem('user_currency') || '€';
   const cInput = $('entry-currency');

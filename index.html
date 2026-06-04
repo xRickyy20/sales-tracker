@@ -11,6 +11,29 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <style>
+    #entry-currency {
+      width: 100%;
+      padding: 12px;
+      background: #1e1e1e;
+      color: #ffffff;
+      border: 1px solid #333333;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+      box-sizing: border-box;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path fill='%23ffffff' d='M0 3l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 10px;
+    }
+    #entry-currency:focus {
+      outline: none;
+      border-color: #555555;
+    }
+  </style>
 </head>
 <body>
   <header class="app-header">
@@ -41,16 +64,6 @@
         </label>
 
         <label class="field">
-          <span class="label">Currency</span>
-          <select id="entry-currency">
-            <option value="€">EUR (€)</option>
-            <option value="$">USD ($)</option>
-            <option value="£">GBP (£)</option>
-            <option value="₣">CHF (₣)</option>
-          </select>
-        </label>
-
-        <label class="field">
           <span class="label">Commission (%)</span>
           <input
             type="number"
@@ -63,6 +76,32 @@
             required
             autocomplete="off"
           >
+        </label>
+
+        <label class="field">
+          <span class="label">Currency</span>
+          <select id="entry-currency">
+            <option value="€">EUR (€) - Euro</option>
+            <option value="$">USD ($) - US Dollar</option>
+            <option value="£">GBP (£) - British Pound</option>
+            <option value="¥">JPY (¥) - Japanese Yen</option>
+            <option value="A$">AUD (A$) - Australian Dollar</option>
+            <option value="C$">CAD (C$) - Canadian Dollar</option>
+            <option value="₣">CHF (₣) - Swiss Franc</option>
+            <option value="¥">CNY (¥) - Chinese Yuan</option>
+            <option value="kr">SEK (kr) - Swedish Krona</option>
+            <option value="NZ$">NZD (NZ$) - New Zealand Dollar</option>
+            <option value="$">MXN ($) - Mexican Peso</option>
+            <option value="S$">SGD (S$) - Singapore Dollar</option>
+            <option value="HK$">HKD (HK$) - Hong Kong Dollar</option>
+            <option value="kr">NOK (kr) - Norwegian Krone</option>
+            <option value="₩">KRW (₩) - South Korean Won</option>
+            <option value="₺">TRY (₺) - Turkish Lira</option>
+            <option value="₹">INR (₹) - Indian Rupee</option>
+            <option value="₽">RUB (₽) - Russian Ruble</option>
+            <option value="R$">BRL (R$) - Brazilian Real</option>
+            <option value="R">ZAR (R) - South African Rand</option>
+          </select>
         </label>
 
         <p class="commission-line">
