@@ -78,7 +78,7 @@
       margin-left: 8px;
     }
     
-    /* Nuovo contenitore unificato per evitare sovrapposizioni */
+    /* Contenitore unificato per evitare sovrapposizioni */
     .footer-container {
       position: fixed !important;
       bottom: 0 !important;
@@ -89,7 +89,7 @@
       display: flex !important;
       flex-direction: column !important;
       box-sizing: border-box !important;
-      padding-bottom: env(safe-area-inset-bottom, 0px); /* Supporto per notch iPhone */
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .backup-disclaimer {
@@ -136,7 +136,11 @@
       font-weight: 700 !important;
     }
 
-    /* Padding aumentato per non nascondere i contenuti dietro il footer alto */
+    /* Forza il Modal di modifica a stare SOPRA alla barra fissa in basso */
+    #edit-modal {
+      z-index: 10005 !important;
+    }
+
     .app-main {
       padding-bottom: 160px !important;
     }
@@ -186,7 +190,7 @@
         </label>
 
         <label class="field">
-          <span class="label">Currency</span>
+          <span class="label">Currency <span style="font-size: 11px; color: #aeaeb2; font-weight: normal; margin-left: 4px;">(cambia tutte le entry)</span></span>
           <select id="entry-currency">
             <option value="€">EUR (€) - Euro</option>
             <option value="$">USD ($) - US Dollar</option>
