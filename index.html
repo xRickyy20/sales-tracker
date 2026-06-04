@@ -15,7 +15,7 @@
 <body>
   <header class="app-header">
     <h1>Sales Tracker</h1>
-    <p class="subtitle">10% commission · offline</p>
+    <p class="subtitle"><span id="header-rate-badge">10</span>% commission · offline</p>
   </header>
 
   <main class="app-main">
@@ -25,6 +25,7 @@
           <span class="label">Date</span>
           <input type="date" id="entry-date" required>
         </label>
+        
         <label class="field">
           <span class="label">Daily sales</span>
           <input
@@ -38,9 +39,26 @@
             autocomplete="off"
           >
         </label>
+
+        <label class="field">
+          <span class="label">Commission (%)</span>
+          <input
+            type="number"
+            id="entry-rate"
+            inputmode="numeric"
+            min="0"
+            max="100"
+            step="1"
+            placeholder="10"
+            required
+            autocomplete="off"
+          >
+        </label>
+
         <p class="commission-line">
-          Commission (10%): <strong id="commission-preview">—</strong>
+          Commission (<span id="commission-rate-badge">10</span>%): <strong id="commission-preview">—</strong>
         </p>
+        
         <button type="submit" class="btn-primary">Save</button>
         <p id="save-status" class="save-status" aria-live="polite"></p>
       </form>

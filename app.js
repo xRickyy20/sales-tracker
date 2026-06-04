@@ -1,8 +1,17 @@
-/**
- * Sales Commission PWA — UI layer (reads/writes only via db.js)
- */
-
 const $ = (id) => document.getElementById(id);
+
+window.calculateCommission = function(sales) {
+  const rate = Number(localStorage.getItem('user_commission_rate')) || 10;
+  return sales * (rate / 100);
+};
+
+// Aggiorna simultaneamente i testi della percentuale sia nell'header che nel form
+function updateCommissionBadges(rate) {
+  const cb = $('commission-rate-badge');
+  const hb = $('header-rate-badge');
+  if (cb) cb.textContent = rate;
+  if (hb) hb.textContent = rate;
+}
 
 const screens = document.querySelectorAll('.screen');
 const navButtons = document.querySelectorAll('.nav-btn');
@@ -52,6 +61,7 @@ navButtons.forEach((btn) => {
 });
 
 function updateCommissionPreview(inputEl, previewEl) {
+  if (!inputEl || !previewEl) return;
   const value = Number(inputEl.value);
   if (!Number.isNaN(value) && value >= 0) {
     previewEl.textContent = formatMoney(calculateCommission(value));
@@ -67,6 +77,20 @@ entryAmount.addEventListener('input', () => {
 editAmount.addEventListener('input', () => {
   updateCommissionPreview(editAmount, editCommissionPreview);
 });
+
+// Gestione sicura dell'input della percentuale della commissione
+const entryRate = $('entry-rate');
+if (entryRate) {
+  entryRate.addEventListener('input', () => {
+    const rateValue = entryRate.value || '0';
+    // Salva la scelta nel browser
+    localStorage.setItem('user_commission_rate', rateValue);
+    // Aggiorna l'interfaccia (Header + Form)
+    updateCommissionBadges(rateValue);
+    // Ricalcola l'anteprima monetaria corrente
+    updateCommissionPreview(entryAmount, commissionPreview);
+  });
+}
 
 function showStatus(message, type) {
   saveStatus.textContent = message;
@@ -347,6 +371,13 @@ function registerServiceWorker() {
 
 async function initApp() {
   entryDate.value = todayISO();
+
+  // RECUPERO MEMORIA: Legge la percentuale salvata e aggiorna i badge all'avvio
+  const savedRate = localStorage.getItem('user_commission_rate') || '10';
+  const rInput = $('entry-rate');
+  if (rInput) rInput.value = savedRate;
+  updateCommissionBadges(savedRate);
+
   entryAmount.focus();
 
   try {
