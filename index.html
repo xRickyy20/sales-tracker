@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#121212">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Sales">
+  <title>Sales Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+  <header class="app-header">
+    <h1>Sales Tracker</h1>
+    <p class="subtitle">10% commission · offline</p>
+  </header>
+
+  <main class="app-main">
+    <section id="screen-daily" class="screen active">
+      <form id="entry-form" class="entry-form">
+        <label class="field">
+          <span class="label">Date</span>
+          <input type="date" id="entry-date" required>
+        </label>
+        <label class="field">
+          <span class="label">Daily sales</span>
+          <input
+            type="number"
+            id="entry-amount"
+            inputmode="decimal"
+            step="0.01"
+            min="0"
+            placeholder="0.00"
+            required
+            autocomplete="off"
+          >
+        </label>
+        <p class="commission-line">
+          Commission (10%): <strong id="commission-preview">—</strong>
+        </p>
+        <button type="submit" class="btn-primary">Save</button>
+        <p id="save-status" class="save-status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="screen-history" class="screen">
+      <p id="history-empty" class="empty-state" hidden>No entries yet.</p>
+      <ul id="history-list" class="history-list"></ul>
+    </section>
+
+    <section id="screen-summary" class="screen">
+      <h2 class="summary-heading">Summary</h2>
+
+      <h3 class="summary-subheading">All time</h3>
+      <dl class="summary-grid">
+        <div class="summary-row">
+          <dt>Total sales</dt>
+          <dd id="summary-all-sales">—</dd>
+        </div>
+        <div class="summary-row">
+          <dt>Total commission</dt>
+          <dd id="summary-all-commission">—</dd>
+        </div>
+        <div class="summary-row">
+          <dt>Entries</dt>
+          <dd id="summary-count">—</dd>
+        </div>
+        <div class="summary-row">
+          <dt>Avg. sales per entry</dt>
+          <dd id="summary-average">—</dd>
+        </div>
+      </dl>
+
+      <h3 id="summary-month-label" class="summary-subheading">This month</h3>
+      <dl class="summary-grid">
+        <div class="summary-row">
+          <dt>Month sales</dt>
+          <dd id="summary-month-sales">—</dd>
+        </div>
+        <div class="summary-row">
+          <dt>Month commission</dt>
+          <dd id="summary-month-commission">—</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section id="screen-backup" class="screen">
+      <h2 class="section-heading">Backup &amp; restore</h2>
+      <p class="hint">Data stays on this device only. Export regularly.</p>
+      <div class="backup-actions">
+        <button type="button" id="btn-export-json" class="btn-secondary">Export JSON</button>
+        <button type="button" id="btn-export-csv" class="btn-secondary">Export CSV</button>
+        <button type="button" id="btn-import-json" class="btn-secondary">Import JSON</button>
+        <input type="file" id="import-file" accept=".json,application/json" hidden>
+      </div>
+      <p id="backup-status" class="save-status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <div id="edit-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel" role="dialog" aria-labelledby="edit-title">
+      <h2 id="edit-title">Edit entry</h2>
+      <form id="edit-form">
+        <input type="hidden" id="edit-id">
+        <label class="field">
+          <span class="label">Date</span>
+          <input type="date" id="edit-date" required>
+        </label>
+        <label class="field">
+          <span class="label">Sales</span>
+          <input type="number" id="edit-amount" step="0.01" min="0" required>
+        </label>
+        <p class="commission-line">
+          Commission: <strong id="edit-commission-preview">—</strong>
+        </p>
+        <div class="modal-buttons">
+          <button type="button" id="edit-cancel" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Main">
+    <button type="button" class="nav-btn active" data-screen="screen-daily">Daily</button>
+    <button type="button" class="nav-btn" data-screen="screen-history">History</button>
+    <button type="button" class="nav-btn" data-screen="screen-summary">Summary</button>
+    <button type="button" class="nav-btn" data-screen="screen-backup">Backup</button>
+  </nav>
+
+  <script src="utils.js"></script>
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
