@@ -40,10 +40,12 @@ body {
   min-height: -webkit-fill-available;
   overflow-x: hidden;
   display: flex;
+  justify-content: center;
   flex-direction: column;
   align-items: center;
   padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 0.5rem);
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .app-header {
@@ -70,10 +72,11 @@ body {
 
 .app-main {
   width: 100%;
-  max-width: var(--app-max-width);
+  max-width: 420px;
   flex: 1;
   margin: 0 auto;
-  padding: 1rem var(--page-gutter) 1.25rem;
+  padding: 16px;
+  padding-bottom: 90px;
   overflow-x: hidden;
 }
 
