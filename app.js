@@ -529,4 +529,21 @@ async function initApp() {
   updateCommissionBadges(savedRate);
 
   const savedCurrency = localStorage.getItem('user_currency') || '€';
-  const cInput
+  const cInput = $('entry-currency');
+  if (cInput) cInput.value = savedCurrency;
+
+  entryAmount.focus();
+
+  try {
+    await openDB();
+    dbReady = true;
+    registerServiceWorker();
+    await refreshAllViews();
+  } catch (err) {
+    console.error(err);
+    dbReady = false;
+    alert('Could not open local database. Use localhost or HTTPS, then refresh.');
+  }
+}
+
+initApp();
