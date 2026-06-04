@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Sales">
   <title>Sales Tracker</title>
-  <link rel="manifest" href="manifest.json">
+  <link class="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <style>
@@ -32,6 +32,67 @@
     #entry-currency:focus {
       outline: none;
       border-color: #555555;
+    }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .filter-row select {
+      flex: 1;
+      padding: 10px;
+      background: #1e1e1e;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .highlight-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .highlight-buttons button {
+      flex: 1;
+      padding: 10px;
+      background: #1e1e1e;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .highlight-buttons button.active {
+      background: #fff;
+      color: #000;
+      border-color: #fff;
+    }
+    .period-select-inline {
+      padding: 6px 12px;
+      background: #1e1e1e;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+    .backup-disclaimer {
+      position: fixed;
+      bottom: 56px;
+      left: 0;
+      width: 100%;
+      background: #2a1a1a;
+      border-top: 1px solid #5a2222;
+      color: #ff9999;
+      padding: 10px 16px;
+      font-size: 12px;
+      text-align: center;
+      box-sizing: border-box;
+      z-index: 10;
+    }
+    .app-main {
+      padding-bottom: 130px !important;
     }
   </style>
 </head>
@@ -114,6 +175,34 @@
     </section>
 
     <section id="screen-history" class="screen">
+      <div class="filter-row">
+        <select id="history-filter-year">
+          <option value="">All Years</option>
+        </select>
+        <select id="history-filter-month">
+          <option value="">All Months</option>
+          <option value="01">January</option>
+          <option value="02">February</option>
+          <option value="03">March</option>
+          <option value="04">April</option>
+          <option value="05">May</option>
+          <option value="06">June</option>
+          <option value="07">July</option>
+          <option value="08">August</option>
+          <option value="09">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+        <select id="history-filter-day">
+          <option value="">All Days</option>
+          <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option>
+        </select>
+      </div>
+      <div class="highlight-buttons">
+        <button type="button" id="btn-high-comm">⭐ Highest Comm.</button>
+        <button type="button" id="btn-low-comm">📉 Lowest Comm.</button>
+      </div>
       <p id="history-empty" class="empty-state" hidden>No entries yet.</p>
       <ul id="history-list" class="history-list"></ul>
     </section>
@@ -121,7 +210,24 @@
     <section id="screen-summary" class="screen">
       <h2 class="summary-heading">Summary</h2>
 
-      <h3 class="summary-subheading">All time</h3>
+      <h3 class="summary-subheading">This month</h3>
+      <dl class="summary-grid">
+        <div class="summary-row">
+          <dt>Month sales</dt>
+          <dd id="summary-month-sales">—</dd>
+        </div>
+        <div class="summary-row">
+          <dt>Month commission</dt>
+          <dd id="summary-month-commission">—</dd>
+        </div>
+      </dl>
+
+      <h3 class="summary-subheading">
+        Period:
+        <select id="summary-period-select" class="period-select-inline">
+          <option value="all">All time</option>
+        </select>
+      </h3>
       <dl class="summary-grid">
         <div class="summary-row">
           <dt>Total sales</dt>
@@ -141,15 +247,15 @@
         </div>
       </dl>
 
-      <h3 id="summary-month-label" class="summary-subheading">This month</h3>
+      <h3 class="summary-subheading">Statistical Insights</h3>
       <dl class="summary-grid">
         <div class="summary-row">
-          <dt>Month sales</dt>
-          <dd id="summary-month-sales">—</dd>
+          <dt>Highest Selling Month</dt>
+          <dd id="summary-stat-best">—</dd>
         </div>
         <div class="summary-row">
-          <dt>Month commission</dt>
-          <dd id="summary-month-commission">—</dd>
+          <dt>Lowest Selling Month</dt>
+          <dd id="summary-stat-worst">—</dd>
         </div>
       </dl>
     </section>
@@ -166,6 +272,10 @@
       <p id="backup-status" class="save-status" aria-live="polite"></p>
     </section>
   </main>
+
+  <div class="backup-disclaimer">
+    ⚠️ Backups are not automatic! Please export your data regularly, especially before removing the shortcut from your home screen, to prevent permanent data loss.
+  </div>
 
   <div id="edit-modal" class="modal" hidden>
     <div class="modal-backdrop"></div>

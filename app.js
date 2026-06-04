@@ -42,12 +42,12 @@ const summaryEls = {
   allCommission: $('summary-all-commission'),
   count: $('summary-count'),
   average: $('summary-average'),
-  monthLabel: $('summary-month-label'),
   monthSales: $('summary-month-sales'),
   monthCommission: $('summary-month-commission')
 };
 
 let dbReady = false;
+let historyHighlight = null;
 
 function showScreen(screenId) {
   const screen = $(screenId);
@@ -160,8 +160,45 @@ async function renderHistory() {
     const entries = await getAllEntries();
     historyList.innerHTML = '';
 
-    if (entries.length === 0) {
-      historyEmpty.textContent = 'No entries yet.';
+    const ySelect = $('history-filter-year');
+    const savedYear = ySelect.value;
+    const uniqueYears = new Set();
+    entries.forEach(e => {
+      const [y] = e.date.split('-');
+      uniqueYears.add(y);
+    });
+    ySelect.innerHTML = '<option value="">All Years</option>';
+    Array.from(uniqueYears).sort().reverse().forEach(y => {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      ySelect.appendChild(opt);
+    });
+    if (Array.from(ySelect.options).some(o => o.value === savedYear)) {
+      ySelect.value = savedYear;
+    } else {
+      ySelect.value = '';
+    }
+
+    let filtered = entries;
+    const selY = ySelect.value;
+    const selM = $('history-filter-month').value;
+    const selD = $('history-filter-day').value;
+
+    if (selY) filtered = filtered.filter(e => e.date.split('-')[0] === selY);
+    if (selM) filtered = filtered.filter(e => e.date.split('-')[1] === selM);
+    if (selD) filtered = filtered.filter(e => e.date.split('-')[2] === selD);
+
+    if (historyHighlight === 'highest' && filtered.length > 0) {
+      const maxC = Math.max(...filtered.map(e => e.commission));
+      filtered = filtered.filter(e => e.commission === maxC);
+    } else if (historyHighlight === 'lowest' && filtered.length > 0) {
+      const minC = Math.min(...filtered.map(e => e.commission));
+      filtered = filtered.filter(e => e.commission === minC);
+    }
+
+    if (filtered.length === 0) {
+      historyEmpty.textContent = 'No entries found.';
       historyEmpty.hidden = false;
       return;
     }
@@ -169,7 +206,7 @@ async function renderHistory() {
     historyEmpty.hidden = true;
 
     const fragment = document.createDocumentFragment();
-    entries.forEach((entry) => {
+    filtered.forEach((entry) => {
       const li = document.createElement('li');
       li.className = 'history-item';
       li.innerHTML = `
@@ -194,6 +231,34 @@ async function renderHistory() {
     historyEmpty.textContent = 'Could not load history. Refresh the page.';
   }
 }
+
+$('history-filter-year').addEventListener('change', renderHistory);
+$('history-filter-month').addEventListener('change', renderHistory);
+$('history-filter-day').addEventListener('change', renderHistory);
+
+$('btn-high-comm').addEventListener('click', () => {
+  if (historyHighlight === 'highest') {
+    historyHighlight = null;
+    $('btn-high-comm').classList.remove('active');
+  } else {
+    historyHighlight = 'highest';
+    $('btn-high-comm').classList.add('active');
+    $('btn-low-comm').classList.remove('active');
+  }
+  renderHistory();
+});
+
+$('btn-low-comm').addEventListener('click', () => {
+  if (historyHighlight === 'lowest') {
+    historyHighlight = null;
+    $('btn-low-comm').classList.remove('active');
+  } else {
+    historyHighlight = 'lowest';
+    $('btn-low-comm').classList.add('active');
+    $('btn-high-comm').classList.remove('active');
+  }
+  renderHistory();
+});
 
 historyList.addEventListener('click', async (e) => {
   const btn = e.target.closest('[data-action]');
@@ -265,20 +330,93 @@ async function confirmDelete(id) {
 async function renderSummary() {
   try {
     const entries = await getAllEntries();
-    const stats = computeStats(entries);
-
-    summaryEls.allSales.textContent = formatMoney(stats.allSales);
-    summaryEls.allCommission.textContent = formatMoney(stats.allCommission);
-    summaryEls.count.textContent = String(stats.count);
-    summaryEls.average.textContent =
-      stats.count > 0 ? formatMoney(stats.average) : '—';
-    summaryEls.monthLabel.textContent = currentMonthLabel();
-    summaryEls.monthSales.textContent = formatMoney(stats.monthSales);
-    summaryEls.monthCommission.textContent = formatMoney(stats.monthCommission);
+    
+    const now = new Date();
+    const currentYearStr = String(now.getFullYear());
+    const currentMonthStr = String(now.getMonth() + 1).padStart(2, '0');
+    const currentPeriodKey = `${currentYearStr}-${currentMonthStr}`;
+    
+    let mSales = 0, mComm = 0;
+    const uniquePeriods = new Set();
+    const monthSalesGrid = Array(12).fill(0);
+    const monthCountsGrid = Array(12).fill(0);
+    
+    entries.forEach(e => {
+      const [y, m] = e.date.split('-');
+      const periodKey = `${y}-${m}`;
+      uniquePeriods.add(periodKey);
+      
+      if (periodKey === currentPeriodKey) {
+        mSales += e.sales;
+        mComm += e.commission;
+      }
+      
+      const mIdx = parseInt(m, 10) - 1;
+      if (mIdx >= 0 && mIdx < 12) {
+        monthSalesGrid[mIdx] += e.sales;
+        monthCountsGrid[mIdx]++;
+      }
+    });
+    
+    summaryEls.monthSales.textContent = formatMoney(mSales);
+    summaryEls.monthCommission.textContent = formatMoney(mComm);
+    
+    const pSelect = $('summary-period-select');
+    const savedVal = pSelect.value;
+    pSelect.innerHTML = '<option value="all">All time</option>';
+    const sortedPeriods = Array.from(uniquePeriods).sort().reverse();
+    const monthNamesEng = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
+    sortedPeriods.forEach(p => {
+      const [y, m] = p.split('-');
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = `${monthNamesEng[parseInt(m,10)-1]} ${y}`;
+      pSelect.appendChild(opt);
+    });
+    
+    if (Array.from(pSelect.options).some(o => o.value === savedVal)) {
+      pSelect.value = savedVal;
+    } else {
+      pSelect.value = 'all';
+    }
+    
+    let filteredEntries = entries;
+    if (pSelect.value !== 'all') {
+      filteredEntries = entries.filter(e => {
+        const [y, m] = e.date.split('-');
+        return `${y}-${m}` === pSelect.value;
+      });
+    }
+    
+    let totalSales = 0, totalComm = 0, count = filteredEntries.length;
+    filteredEntries.forEach(e => {
+      totalSales += e.sales;
+      totalComm += e.commission;
+    });
+    
+    summaryEls.allSales.textContent = formatMoney(totalSales);
+    summaryEls.allCommission.textContent = formatMoney(totalComm);
+    summaryEls.count.textContent = String(count);
+    summaryEls.average.textContent = count > 0 ? formatMoney(totalSales / count) : '—';
+    
+    let bMonth = "—", wMonth = "—";
+    let maxS = -1, minS = Infinity;
+    for (let i = 0; i < 12; i++) {
+      if (monthCountsGrid[i] > 0) {
+        if (monthSalesGrid[i] > maxS) { maxS = monthSalesGrid[i]; bMonth = monthNamesEng[i]; }
+        if (monthSalesGrid[i] < minS) { minS = monthSalesGrid[i]; wMonth = monthNamesEng[i]; }
+      }
+    }
+    $('summary-stat-best').textContent = bMonth;
+    $('summary-stat-worst').textContent = wMonth;
+    
   } catch (err) {
     console.error('renderSummary:', err);
   }
 }
+
+$('summary-period-select').addEventListener('change', renderSummary);
 
 $('btn-export-json').addEventListener('click', async () => {
   if (!dbReady) {
@@ -391,21 +529,4 @@ async function initApp() {
   updateCommissionBadges(savedRate);
 
   const savedCurrency = localStorage.getItem('user_currency') || '€';
-  const cInput = $('entry-currency');
-  if (cInput) cInput.value = savedCurrency;
-
-  entryAmount.focus();
-
-  try {
-    await openDB();
-    dbReady = true;
-    registerServiceWorker();
-    await refreshAllViews();
-  } catch (err) {
-    console.error(err);
-    dbReady = false;
-    alert('Could not open local database. Use localhost or HTTPS, then refresh.');
-  }
-}
-
-initApp();
+  const cInput
